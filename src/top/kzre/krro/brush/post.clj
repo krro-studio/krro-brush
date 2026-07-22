@@ -2,14 +2,15 @@
   "后处理器：基于 color-utils 的 float[] 颜色。
    直接操作画布数组 data。"
   (:require [top.kzre.krro.brush.util :as util])
-  (:import [top.kzre.colorutils.color RGB]))
+  (:import (top.kzre.colorutils.color RGB)
+           (top.kzre.krro.util.tile Canvas)))
 
 (defmulti apply-post-effect
-          (fn [effect _pixel _data _w _h _dab-mask _brush-spec _params] (:type effect)))
+          (fn [effect _pixel ^Canvas _canvas _w _h _dab-mask _brush-spec _params] (:type effect)))
 
 ;; ── 水彩边缘效果 ──────────────────────────────────────
 (defmethod apply-post-effect :watercolor-edge
-  [effect pixel _data _w _h dab-mask _brush-spec params]
+  [effect pixel ^Canvas _data _w _h dab-mask _brush-spec params]
   (let [intensity (float (or (:intensity effect) 0.5))
         alpha     (RGB/alpha pixel)          ;; float
         px        (:x params)
@@ -35,7 +36,7 @@
 
 ;; ── 纸纹合成效果 ──────────────────────────────────────
 (defmethod apply-post-effect :paper-texture
-  [effect pixel _data _w _h _dab-mask brush-spec params]
+  [effect pixel ^Canvas _data _w _h _dab-mask brush-spec params]
   (let [strength (float (or (:strength effect) 0.2))
         paper-texture (util/param :texture effect brush-spec)
         x (:x params)
@@ -59,22 +60,22 @@
 
 ;; ── 默认直通 ──────────────────────────────────────────
 (defmethod apply-post-effect :default
-  [_effect pixel _data _w _h _dab-mask _brush-spec _params]
+  [_effect pixel ^Canvas _data _w _h _dab-mask _brush-spec _params]
   pixel)
 
 ;; ── 管线驱动 ──────────────────────────────────────────
 (defn apply-post-pipeline
   "按顺序应用后处理效果。
    pixel     - 当前 RGBA 数组 float[4]
-   data      - 画布数组
+   canvas      - 画布
    w         - 画布宽度
    h         - 画布高度
-   dab-mask  - dab 遮罩 {:width :height :data}
+   dab-mask  - dab 遮罩 {:width :height :canvas}
    brush-spec - 笔刷定义
    params    - 当前 dab 参数，包含 :x, :y"
-  [pixel data w h dab-mask brush-spec params]
+  [pixel ^Canvas canvas w h dab-mask brush-spec params]
   (let [post-spec (:post-spec brush-spec)]
     (reduce (fn [pixel' effect]
-              (apply-post-effect effect pixel' data w h dab-mask brush-spec params))
+              (apply-post-effect effect pixel' canvas w h dab-mask brush-spec params))
             pixel
             post-spec)))

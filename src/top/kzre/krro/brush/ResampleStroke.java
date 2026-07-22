@@ -24,14 +24,11 @@ final class ResampleStroke extends SmoothStroke {
         if (lastEvent != null) {
             float step = spacingFn.getStep(lastEvent, e);
             if (step > 0) {
-                // 在 lastEvent 和 e 之间插值生成中间点（包含 e，不包含 lastEvent）
                 interpolateAndPush(lastEvent, e, step);
             } else {
-                // 步长为0，直接推送原事件
                 inner.push(e);
             }
         } else {
-            // 第一个点直接推送
             inner.push(e);
         }
         lastEvent = e;
@@ -55,17 +52,19 @@ final class ResampleStroke extends SmoothStroke {
 
         for (int i = 1; i <= segments; i++) {
             float t = (float) i / segments; // 插值比例
-            PointerEvent interpolated = PointerEvent.create(
-                    lerp(p1.getX(), p2.getX(), t),
-                    lerp(p1.getY(), p2.getY(), t),
-                    lerp(p1.getPressure(), p2.getPressure(), t),
-                    lerp(p1.getTiltX(), p2.getTiltX(), t),
-                    lerp(p1.getTiltY(), p2.getTiltY(), t),
-                    lerp(p1.getRotation(), p2.getRotation(), t),
-                    p1.getTimestamp() + (long) ((p2.getTimestamp() - p1.getTimestamp()) * t),
-                    lerp(p1.getPerspective(), p2.getPerspective(), t),
-                    p2.getType()  // 通常使用当前事件的类型
-            );
+            long interpolatedTimestamp = p1.getTimestamp() + (long) ((p2.getTimestamp() - p1.getTimestamp()) * t);
+
+            PointerEvent interpolated = PointerEvent.newBuilder()
+                    .x(lerp(p1.getX(), p2.getX(), t))
+                    .y(lerp(p1.getY(), p2.getY(), t))
+                    .pressure(lerp(p1.getPressure(), p2.getPressure(), t))
+                    .tiltX(lerp(p1.getTiltX(), p2.getTiltX(), t))
+                    .tiltY(lerp(p1.getTiltY(), p2.getTiltY(), t))
+                    .rotation(lerp(p1.getRotation(), p2.getRotation(), t))
+                    .timestamp(interpolatedTimestamp)
+                    .type(p2.getType())  // 使用当前事件的类型
+                    .build();
+
             inner.push(interpolated);
         }
     }

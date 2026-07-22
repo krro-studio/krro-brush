@@ -31,7 +31,7 @@ public final class DynamicsStroke implements Stroke {
      * 若已缓存则直接返回，否则调用 mapper 计算并缓存。
      */
     public IPersistentMap getParams(PointerEvent e) {
-        return cache.computeIfAbsent(e, k -> mapper.map(k, brushSpec));
+        return cache.computeIfAbsent(e, k -> mapper.map(k, brushSpec, this));
     }
 
     public IPersistentVector getParamsVector() {

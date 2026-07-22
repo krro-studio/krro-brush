@@ -5,7 +5,7 @@ package top.kzre.krro.brush;
  * 实现可原地修改 pixel 数组（RGBA, float[4]）。
  */
 @FunctionalInterface
-public interface PixelPostprocessor {
+interface PixelPostprocessor {
     /**
      * @param pixel     当前 RGBA 像素 (混合结果)，可原地修改
      * @return 新像素

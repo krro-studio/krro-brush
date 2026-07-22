@@ -17,25 +17,23 @@ final class KalmanFilterStroke extends SmoothStroke {
         this.filterState = filterState;
     }
 
-
     @Override
     public Stroke push(PointerEvent e) {
-        // 用滤波器更新位置
         filter.filter(e.getX(), e.getY(), filterState);
         double smoothX = filterState.getFilteredX();
         double smoothY = filterState.getFilteredY();
 
-        PointerEvent smoothed = PointerEvent.create(
-                (float) smoothX,
-                (float) smoothY,
-                e.getPressure(),
-                e.getTiltX(),
-                e.getTiltY(),
-                e.getRotation(),
-                e.getTimestamp(),
-                e.getPerspective(),
-                e.getType()
-        );
+        PointerEvent smoothed = PointerEvent.newBuilder()
+                .x((float) smoothX)
+                .y((float) smoothY)
+                .pressure(e.getPressure())
+                .tiltX(e.getTiltX())
+                .tiltY(e.getTiltY())
+                .rotation(e.getRotation())
+                .timestamp(e.getTimestamp())
+                .type(e.getType())
+                .build();
+
         inner.push(smoothed);
         return this;
     }

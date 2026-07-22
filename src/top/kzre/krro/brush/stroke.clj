@@ -60,11 +60,10 @@
       (update :y #(int (Math/round (double %))))))
 
 (defn make-post-processor
-  "创建后处理器，仅处理当前像素（不依赖画布数组）。"
-  [dab-mask brush-spec params]
+  [dab-mask brush-spec params ^Canvas canvas]
   (reify PixelPostprocessor
     (process [_ pixel]
-      (post/apply-post-pipeline pixel nil 0 0 dab-mask brush-spec params))))
+      (post/apply-post-pipeline pixel canvas 0 0 dab-mask brush-spec params))))
 
 ;; ── 单个 dab 渲染（直接操作 TiledCanvas） ─────────
 (defn- render-dab!
@@ -79,7 +78,7 @@
                    mw             (int (:width dab-mask))
                    mh             (int (:height dab-mask))
                    ^floats mask-data (:data dab-mask)
-                   post-processor (make-post-processor dab-mask brush params')
+                   post-processor (make-post-processor dab-mask brush params' canvas)
                    ;; 直接调用 Stroke 的新方法，由 Java 侧处理拷贝与合并
                    dirty-set      (StrokeUtil/stampDab canvas
                                                        mask-data mw mh x y
