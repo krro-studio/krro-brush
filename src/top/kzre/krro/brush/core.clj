@@ -7,6 +7,14 @@
     [top.kzre.krro.brush.taper :as taper]
     [top.kzre.krro.brush.vector :as vector]))
 
+;; 设计 Clojure 组织，负责组织流水线，并解析参数
+;; 共同抽象是 TiledCanvas
+
+(defn render!
+  "渲染一个笔触."
+  [events ]
+  )
+
 ;; 重采样
 (def resample resample/resample)
 

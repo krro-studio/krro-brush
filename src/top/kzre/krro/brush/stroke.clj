@@ -14,7 +14,7 @@
     [top.kzre.krro.brush.util :as util])
   (:import
     (top.kzre.colorutils.blend Blends)
-    (top.kzre.krro.brush PixelPostprocessor Stroke)
+    (top.kzre.krro.brush PixelPostprocessor StrokeUtil)
     (top.kzre.krro.util.tile Canvas TiledCanvas)))
 
 ;; ── 事件→笔触构建（保持不变）─────────────────────
@@ -81,10 +81,10 @@
                    ^floats mask-data (:data dab-mask)
                    post-processor (make-post-processor dab-mask brush params')
                    ;; 直接调用 Stroke 的新方法，由 Java 侧处理拷贝与合并
-                   dirty-set      (Stroke/stampDab canvas
-                                                   mask-data mw mh x y
-                                                   fg-color blend-mode extra-opacity
-                                                   post-processor)]
+                   dirty-set      (StrokeUtil/stampDab canvas
+                                                       mask-data mw mh x y
+                                                       fg-color blend-mode extra-opacity
+                                                       post-processor)]
                [canvas (set dirty-set)])))
 
 ;; ── 笔触级渲染 ─────────────────────────────────

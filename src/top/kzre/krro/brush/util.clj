@@ -2,10 +2,14 @@
   (:import (top.kzre.colorutils MathUtils)))
 
 (defn param
-  "从多个 map 中按顺序查找关键字 kw，返回第一个非 nil 的值。
-   若所有 map 都不包含该键，返回 nil。"
-  [kw & maps]
-  (some #(get % kw) maps))
+  "从 map1 和 map2 中按顺序查找关键字 kw，返回第一个非 nil 的值。
+   若两个 map 都不包含该键，返回 default（可选，默认为 nil）。"
+  ([kw map1 map2]
+   (param kw map1 map2 nil))
+  ([kw map1 map2 default]
+   (if-let [v (get map1 kw)]
+     v
+     (get map2 kw default))))
 
 (defn clamp01 [x]
   (MathUtils/clamp01 (float x)))

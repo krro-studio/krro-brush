@@ -7,9 +7,6 @@ package top.kzre.krro.brush;
  */
 public final class PointerEvent {
 
-    /**
-     * 事件类型：下笔、移动、抬笔。
-     */
     public enum EventType {
         DOWN,
         MOVE,
