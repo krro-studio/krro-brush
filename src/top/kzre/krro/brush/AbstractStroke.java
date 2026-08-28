@@ -26,11 +26,16 @@ public abstract class AbstractStroke implements Stroke {
 
         for (int i = 0; i < n; i++) {
             PointerEvent e = this.getEvent(i);
-            list.add(cache.computeIfAbsent(e, k -> mapper.map(k, brushSpec, this)));  // 触发缓存计算
+            list.add(getStrokeEvent(e));  // 触发缓存计算
         }
         return PersistentVector.create(list);
     }
 
+    public IPersistentMap getStrokeEvent(PointerEvent e) {
+        return cache.computeIfAbsent(e, k -> mapper.map(k, brushSpec, this));
+    }
+
+    @Override
     public IPersistentMap getBrushSpec(){
         return this.brushSpec;
     }

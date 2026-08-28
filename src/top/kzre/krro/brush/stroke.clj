@@ -3,47 +3,14 @@
   (:require
     [taoensso.tufte :as p]
     [top.kzre.krro.brush.dab :as dab]
-    [top.kzre.krro.brush.dynamics :as dynamics]
-    [top.kzre.krro.brush.event :as event]
-    [top.kzre.krro.brush.measure :as measure]
     [top.kzre.krro.brush.mix :as mix]
     [top.kzre.krro.brush.post :as post]
-    [top.kzre.krro.brush.resample :as resample]
-    [top.kzre.krro.brush.smooth :as smooth]
-    [top.kzre.krro.brush.taper :as taper]
     [top.kzre.krro.brush.util :as util])
   (:import
     (top.kzre.colorutils.blend Blends)
     (top.kzre.krro.brush AbstractStroke PixelPostprocessor StrokeUtil)
     (top.kzre.krro.util.tile Canvas TiledCanvas)))
 
-;; ── 事件→笔触构建（保持不变）─────────────────────
-(defn events->stroke
-  [brush-spec events & {:keys [skip-smooth?] :as opts
-                        :or {skip-smooth? false}}]
-  (p/profile {:id :krro.brush/events->stroke
-              :data {:event-count (count events)
-                     :brush-id (:id brush-spec)}}
-             (let [filled    (p/p :polyfill (map event/polyfill events))
-                   smoothed  (if skip-smooth?
-                               filled
-                               (p/p :smooth (smooth/smooth filled (:smooth brush-spec))))
-                   resampled (p/p :resample (resample/resample smoothed brush-spec))
-                   measured  (p/p :measure (measure/measure resampled))
-                   mapped    (p/p :map-dynamics
-                                  (mapv #(dynamics/map-dynamics % brush-spec) measured))
-                   stroke    {:brush brush-spec :params mapped}
-                   tapered   (if (or (:taper-start-px brush-spec) (:taper-end-px brush-spec)
-                                     (:taper-start-ratio brush-spec) (:taper-end-ratio brush-spec))
-                               (p/p :taper
-                                    (taper/taper-stroke stroke
-                                                        :taper-start-px (:taper-start-px brush-spec)
-                                                        :taper-end-px (:taper-end-px brush-spec)
-                                                        :taper-start-ratio (:taper-start-ratio brush-spec)
-                                                        :taper-end-ratio (:taper-end-ratio brush-spec)
-                                                        :taper-fields (:taper-fields brush-spec)))
-                               stroke)]
-               tapered)))
 
 (defn join-stroke
   [& strokes]
@@ -100,16 +67,13 @@
                           params))))
 
 (defn render-stroke!
-  "渲染整个笔触，返回 [new-canvas, dirty-tiles-set]。"
-  [canvas ^AbstractStroke stroke]
+  [canvas {:keys [brush params]}]
   (p/profile {:id :krro.brush/render-stroke}
-             (let [stroke-v (.getStroke stroke)]
-               (p/p :render-total-stroke
-                    (reduce (fn [[^TiledCanvas c dirty] point-params]
-                              (p/p :render-single-event
-                                   (let [brush (.getBrushSpec stroke)
-                                         [fg-color _] (p/p :mix-color (mix/mix (.getBrushSpec stroke) point-params {} c))
-                                         [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
-                                     [new-c (into dirty dab-dirty)])))
-                            [canvas #{}]
-                            stroke-v)))))
+             (p/p :render-total-stroke
+                  (reduce (fn [[^TiledCanvas c dirty] point-params]
+                            (p/p :render-single-event
+                                 (let [[fg-color _] (p/p :mix-color (mix/mix brush point-params {} c))
+                                       [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
+                                   [new-c (into dirty dab-dirty)])))
+                          [canvas #{}]
+                          params))))

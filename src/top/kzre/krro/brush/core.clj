@@ -11,7 +11,6 @@
 (def resample resample/resample)
 
 ;; 笔触构建与渲染
-(def events->stroke stroke/events->stroke)
 (def join-stroke stroke/join-stroke)
 (def render-stroke-dirties! stroke/render-stroke-dirties!)
 (def render-stroke! stroke/render-stroke!)

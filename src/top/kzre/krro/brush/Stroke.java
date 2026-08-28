@@ -1,5 +1,6 @@
 package top.kzre.krro.brush;
 
+import clojure.lang.IPersistentMap;
 import clojure.lang.IPersistentVector;
 
 public interface Stroke {
@@ -18,4 +19,6 @@ public interface Stroke {
     default boolean isEmpty() { return size() == 0; }
 
     IPersistentVector getStroke();
+
+    IPersistentMap getBrushSpec();
 }

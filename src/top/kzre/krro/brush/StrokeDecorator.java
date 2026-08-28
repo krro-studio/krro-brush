@@ -2,10 +2,11 @@ package top.kzre.krro.brush;
 
 import clojure.lang.IPersistentVector;
 
-public abstract class StrokeDecorator implements Stroke {
+public abstract class StrokeDecorator extends AbstractStroke implements Stroke {
     protected final Stroke inner;
 
     protected StrokeDecorator(Stroke inner) {
+        super(inner.getBrushSpec());
         this.inner = inner;
     }
 

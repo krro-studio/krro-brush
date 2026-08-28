@@ -16,6 +16,11 @@ final class CableFilterStroke extends SmoothStroke {
         return new CableFilterStroke(inner, filter);
     }
 
+    static CableFilterStroke create(Stroke inner, double alpha) {
+        CompositeFilter2D filter = CompositeFilter2D.newCable2D(alpha);
+        return new CableFilterStroke(inner, filter);
+    }
+
     @Override
     public Stroke append(PointerEvent e) {
         CompositeFilter2D newFilter = filter.filter(e.getX(), e.getY());
