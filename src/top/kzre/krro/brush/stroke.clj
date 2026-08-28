@@ -14,7 +14,7 @@
     [top.kzre.krro.brush.util :as util])
   (:import
     (top.kzre.colorutils.blend Blends)
-    (top.kzre.krro.brush PixelPostprocessor StrokeUtil)
+    (top.kzre.krro.brush AbstractStroke PixelPostprocessor StrokeUtil)
     (top.kzre.krro.util.tile Canvas TiledCanvas)))
 
 ;; ── 事件→笔触构建（保持不变）─────────────────────
@@ -101,5 +101,15 @@
 
 (defn render-stroke!
   "渲染整个笔触，返回 [new-canvas, dirty-tiles-set]。"
-  [canvas stroke]
-  (render-stroke-dirties! canvas stroke))
+  [canvas ^AbstractStroke stroke]
+  (p/profile {:id :krro.brush/render-stroke}
+             (let [stroke-v (.getStroke stroke)]
+               (p/p :render-total-stroke
+                    (reduce (fn [[^TiledCanvas c dirty] point-params]
+                              (p/p :render-single-event
+                                   (let [brush (.getBrushSpec stroke)
+                                         [fg-color _] (p/p :mix-color (mix/mix (.getBrushSpec stroke) point-params {} c))
+                                         [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
+                                     [new-c (into dirty dab-dirty)])))
+                            [canvas #{}]
+                            stroke-v)))))

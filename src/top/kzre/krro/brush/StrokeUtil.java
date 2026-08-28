@@ -9,7 +9,7 @@ import top.kzre.krro.util.tile.TiledCanvas;
 import java.util.HashSet;
 import java.util.Set;
 
-final class StrokeUtil {
+public final class StrokeUtil {
 
     private StrokeUtil() {}
 

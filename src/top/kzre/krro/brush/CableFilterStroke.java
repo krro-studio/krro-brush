@@ -1,27 +1,26 @@
 package top.kzre.krro.brush;
 
-import top.kzre.smooth.CableFilter2D;
+import top.kzre.smooth.CompositeFilter2D;
 
-/**
- * 基于 CableFilter2D 的在线平滑笔触。
- * 坐标经过低通滤波后传递给内部 Stroke，其他属性保持不变。
- */
 final class CableFilterStroke extends SmoothStroke {
 
-    private final CableFilter2D filter;
-    private final CableFilter2D.CableState filterState;
+    private final CompositeFilter2D filter;
 
-    public CableFilterStroke(Stroke inner, CableFilter2D filter, CableFilter2D.CableState filterState) {
+    private CableFilterStroke(Stroke inner, CompositeFilter2D filter) {
         super(inner);
         this.filter = filter;
-        this.filterState = filterState;
+    }
+
+    static CableFilterStroke create(Stroke inner, double alpha, double initX, double initY) {
+        CompositeFilter2D filter = CompositeFilter2D.newCable2D(alpha, initX, initY);
+        return new CableFilterStroke(inner, filter);
     }
 
     @Override
-    public Stroke push(PointerEvent e) {
-        filter.filter(e.getX(), e.getY(), filterState);
-        double smoothX = filterState.getFilteredX();
-        double smoothY = filterState.getFilteredY();
+    public Stroke append(PointerEvent e) {
+        CompositeFilter2D newFilter = filter.filter(e.getX(), e.getY());
+        double smoothX = newFilter.getX();   // 滤波后坐标
+        double smoothY = newFilter.getY();
 
         PointerEvent smoothed = PointerEvent.newBuilder()
                 .x((float) smoothX)
@@ -34,7 +33,7 @@ final class CableFilterStroke extends SmoothStroke {
                 .type(e.getType())
                 .build();
 
-        inner.push(smoothed);
-        return this;
+        Stroke newInner = inner.append(smoothed);
+        return new CableFilterStroke(newInner, newFilter);
     }
 }

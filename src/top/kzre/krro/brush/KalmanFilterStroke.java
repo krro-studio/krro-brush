@@ -1,27 +1,32 @@
 package top.kzre.krro.brush;
 
-import top.kzre.smooth.KalmanFilter2D;
+import top.kzre.smooth.CompositeFilter2D;
 
-/**
- * 基于卡尔曼滤波的在线平滑笔触。
- * 利用速度预测，动态响应更快，适合快速涂抹或书法笔触。
- */
 final class KalmanFilterStroke extends SmoothStroke {
 
-    private final KalmanFilter2D filter;
-    private final KalmanFilter2D.State filterState;
+    private final CompositeFilter2D filter;
 
-    public KalmanFilterStroke(Stroke inner, KalmanFilter2D filter, KalmanFilter2D.State filterState) {
+    private KalmanFilterStroke(Stroke inner, CompositeFilter2D filter) {
         super(inner);
         this.filter = filter;
-        this.filterState = filterState;
+    }
+
+    static KalmanFilterStroke create(Stroke inner,
+                                     double processNoise,
+                                     double measurementNoise,
+                                     double initX,
+                                     double initY,
+                                     double initError) {
+        CompositeFilter2D filter = CompositeFilter2D.newKalman2D(processNoise, measurementNoise,
+                initX, initY, initError);
+        return new KalmanFilterStroke(inner, filter);
     }
 
     @Override
-    public Stroke push(PointerEvent e) {
-        filter.filter(e.getX(), e.getY(), filterState);
-        double smoothX = filterState.getFilteredX();
-        double smoothY = filterState.getFilteredY();
+    public Stroke append(PointerEvent e) {
+        CompositeFilter2D newFilter = filter.filter(e.getX(), e.getY());
+        double smoothX = newFilter.getX();
+        double smoothY = newFilter.getY();
 
         PointerEvent smoothed = PointerEvent.newBuilder()
                 .x((float) smoothX)
@@ -34,7 +39,7 @@ final class KalmanFilterStroke extends SmoothStroke {
                 .type(e.getType())
                 .build();
 
-        inner.push(smoothed);
-        return this;
+        Stroke newInner = inner.append(smoothed);
+        return new KalmanFilterStroke(newInner, newFilter);
     }
 }

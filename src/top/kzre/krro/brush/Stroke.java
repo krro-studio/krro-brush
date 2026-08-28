@@ -1,7 +1,10 @@
 package top.kzre.krro.brush;
 
+import clojure.lang.IPersistentVector;
+
 public interface Stroke {
-    Stroke push(PointerEvent e);
+
+    Stroke append(PointerEvent e);
     int size();
     PointerEvent getEvent(int index);
     PointerEvent getFirstEvent();
@@ -13,4 +16,6 @@ public interface Stroke {
     float getCumulativeLength(PointerEvent event);
 
     default boolean isEmpty() { return size() == 0; }
+
+    IPersistentVector getStroke();
 }
