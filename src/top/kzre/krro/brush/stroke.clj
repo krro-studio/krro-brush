@@ -8,7 +8,7 @@
     [top.kzre.krro.brush.util :as util])
   (:import
     (top.kzre.colorutils.blend Blends)
-    (top.kzre.krro.brush AbstractStroke PixelPostprocessor StrokeUtil)
+    (top.kzre.krro.brush AbstractStroke PixelPostprocessor Stroke StrokeUtil)
     (top.kzre.krro.util.tile Canvas TiledCanvas)))
 
 
@@ -34,9 +34,9 @@
 
 ;; ── 单个 dab 渲染（直接操作 TiledCanvas） ─────────
 (defn- render-dab!
-  [^Canvas canvas brush params fg-color]
+  [^Canvas canvas brush stroke-v fg-color]
   (p/profile {:id :krro.brush/render-dab}
-             (let [params'        (preprocess-params params)
+             (let [params'        (preprocess-params stroke-v)
                    dab-mask       (p/p :generate-dab (dab/generate-dab brush params'))
                    blend-mode     (util/blend-mode-str brush Blends/NORMAL)
                    extra-opacity  (float (or (util/param :opacity params' brush) 1.0))
@@ -53,27 +53,16 @@
                                                        post-processor)]
                [canvas (set dirty-set)])))
 
-;; ── 笔触级渲染 ─────────────────────────────────
-(defn render-stroke-dirties!
-  [canvas {:keys [brush params]}]
-  (p/profile {:id :krro.brush/render-stroke}
-             (p/p :render-total-stroke
-                  (reduce (fn [[^TiledCanvas c dirty] point-params]
-                            (p/p :render-single-event
-                                 (let [[fg-color _] (p/p :mix-color (mix/mix brush point-params {} c))
-                                       [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
-                                   [new-c (into dirty dab-dirty)])))
-                          [canvas #{}]
-                          params))))
-
 (defn render-stroke!
-  [canvas {:keys [brush params]}]
-  (p/profile {:id :krro.brush/render-stroke}
-             (p/p :render-total-stroke
-                  (reduce (fn [[^TiledCanvas c dirty] point-params]
-                            (p/p :render-single-event
-                                 (let [[fg-color _] (p/p :mix-color (mix/mix brush point-params {} c))
-                                       [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
-                                   [new-c (into dirty dab-dirty)])))
-                          [canvas #{}]
-                          params))))
+  [canvas ^Stroke stroke]
+  (let [brush (.getBrushSpec stroke)
+        stroke-v (.getStroke stroke)]
+    (p/profile {:id :krro.brush/render-stroke}
+               (p/p :render-total-stroke
+                    (reduce (fn [[^TiledCanvas c dirty] point-params]
+                              (p/p :render-single-event
+                                   (let [[fg-color _] (p/p :mix-color (mix/mix brush point-params {} c))
+                                         [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
+                                     [new-c (into dirty dab-dirty)])))
+                            [canvas #{}]
+                            stroke-v)))))
