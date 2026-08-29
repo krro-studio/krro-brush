@@ -21,4 +21,18 @@ public interface Stroke {
     IPersistentVector getStroke();
 
     IPersistentMap getBrushSpec();
+
+    default Stroke last(int n){
+        return StrokeView.last(this, n);
+    }
+    default Stroke last(){
+        return StrokeView.last(this, 1);
+    }
+    default Stroke first(int n){
+        return StrokeView.first(this, n);
+    }
+    default Stroke first(){
+        return StrokeView.first(this, 1);
+    }
+
 }
