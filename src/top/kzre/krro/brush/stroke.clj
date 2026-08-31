@@ -53,9 +53,10 @@
                                                        post-processor)]
                [canvas (set dirty-set)])))
 
-(defn render-stroke!
-  [canvas ^Stroke stroke]
-  (let [brush (.getBrushSpec stroke)
+(defn render-stroke
+  [^TiledCanvas canvas ^Stroke stroke]
+  (let [out-canvas (.copy canvas)
+        brush (.getBrushSpec stroke)
         stroke-v (.getStroke stroke)]
     (p/profile {:id :krro.brush/render-stroke}
                (p/p :render-total-stroke
@@ -64,5 +65,5 @@
                                    (let [[fg-color _] (p/p :mix-color (mix/mix brush point-params {} c))
                                          [new-c dab-dirty] (p/p :render-dab (render-dab! c brush point-params fg-color))]
                                      [new-c (into dirty dab-dirty)])))
-                            [canvas #{}]
+                            [out-canvas #{}]
                             stroke-v)))))

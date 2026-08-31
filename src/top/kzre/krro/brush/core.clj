@@ -12,7 +12,7 @@
 
 ;; 笔触构建与渲染
 (def join-stroke stroke/join-stroke)
-(def render-stroke! stroke/render-stroke!)
+(def render-stroke stroke/render-stroke)
 
 ;; 动态混色（colored-brush, dulling, smudge 等）
 (def mix mix/mix)
