@@ -1,8 +1,6 @@
 package top.kzre.krro.brush;
 
-import top.kzre.curve.bezier2d.Bezier2D;
-import top.kzre.curve.bezier2d.ChordLengthTable;
-import top.kzre.curve.bezier2d.Curve;
+import top.kzre.curve.bezier2d.*;
 
 /**
  * 矢量笔触生成器：拟合贝塞尔曲线并沿弦长等距采样宽度。
@@ -43,19 +41,27 @@ public final class VectorStroke {
         Curve curve = Bezier2D.fit(xs, ys, maxError, 100);
 
         // 2. 原始点弦长参数化
-        ChordLengthTable chordTable = new ChordLengthTable(xs, ys);
-        double[] tParams = chordTable.getParameters();  // 每个原始点的归一化弦长参数
+        TableMapping chordTable = ChordLengthUtils.fromPoints(xs, ys);
+        int chordSamples = chordTable.getSamples();
+        double[] chordParams = new double[chordSamples];
+        double maxS = chordTable.getMaxS();
+        double[] sParams = chordTable.getSParams();
+        for (int i = 0; i < chordSamples; i++) {
+            chordParams[i] = sParams[i] / maxS;
+        }
+        chordParams[0]=0;
+        chordParams[chordSamples -1]=1.0;
 
         // 3. 均匀采样参数，并对宽度线性插值
         double[] sampledWidths = new double[samples + 1];
-        double[] sampledArcParams = new double[samples + 1];
+        double[] sampledTParams = new double[samples + 1];
         for (int i = 0; i <= samples; i++) {
             double t = (double) i / samples;
-            sampledArcParams[i] = t;
-            sampledWidths[i] = interpolate(tParams, widths, t);
+            sampledTParams[i] = t;
+            sampledWidths[i] = interpolate(chordParams, widths, t);
         }
 
-        return new VectorStrokeResult(curve, sampledWidths, sampledArcParams);
+        return new VectorStrokeResult(curve, sampledWidths, sampledTParams);
     }
 
     /** 在单调递增的 xs 和对应 ys 之间线性插值 */
@@ -73,16 +79,18 @@ public final class VectorStroke {
     public static class VectorStrokeResult {
         private final Curve curve;
         private final double[] widthSamples;
-        private final double[] arcParams;
+        private final double[] tParams;
 
-        public VectorStrokeResult(Curve curve, double[] widthSamples, double[] arcParams) {
+        public VectorStrokeResult(Curve curve, double[] widthSamples, double[] tParams) {
             this.curve = curve;
             this.widthSamples = widthSamples;
-            this.arcParams = arcParams;
+            this.tParams = tParams;
         }
 
         public Curve getCurve()           { return curve; }
         public double[] getWidthSamples() { return widthSamples; }
-        public double[] getArcParams()    { return arcParams; }
+        @Deprecated
+        public double[] getArcParams()    { return tParams; }
+        public double[] getTParams()    { return tParams; }
     }
 }

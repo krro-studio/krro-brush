@@ -33,7 +33,7 @@
    返回（成功时）：
      {:curve         top.kzre.curve.bezier2d.Curve
       :width-samples [Double]
-      :arc-params    [Double]}"
+      :t-params    [Double]}"
   [params & {:keys [max-error width-samples]
              :or {max-error 4.0 width-samples 100}}]
   (when (and (some? params) (>= (count params) 2))
@@ -43,4 +43,4 @@
           result    (VectorStroke/generate xs ys widths max-error width-samples)]
       {:curve         (.getCurve result)
        :width-samples (vec (.getWidthSamples result))
-       :arc-params    (vec (.getArcParams result))})))
+       :t-params    (vec (.getTParams result))})))
