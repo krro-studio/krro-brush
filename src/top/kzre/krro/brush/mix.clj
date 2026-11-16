@@ -10,7 +10,7 @@
 
 (defmethod mix :default
   [{:keys [color]} _params state _canvas]
-  [color state])
+  [(float-array color) state])
 
 ;; 颜色携带
 (defmethod mix :colored-brush [brush-spec params state canvas]

@@ -3,13 +3,12 @@
 
         top.kzre/krro-util-pool {:mvn/version "1.0-SNAPSHOT"}
         top.kzre/krro-util-math {:mvn/version "1.0-SNAPSHOT"}
-        top.kzre/color-utils {:mvn/version "1.0-SNAPSHOT"}
         top.kzre/krro-util-tile {:mvn/version "1.0-SNAPSHOT"}
+        top.kzre/color-utils {:mvn/version "1.0-SNAPSHOT"}
         top.kzre/curve-bezier2d {:mvn/version "1.0-SNAPSHOT"}
         top.kzre/smooth  {:mvn/version "1.0-SNAPSHOT"}
         top.kzre/value-mapping {:mvn/version "1.0-SNAPSHOT"}
         top.kzre/pixelshape {:mvn/version "1.0-SNAPSHOT"}
-
 
         com.taoensso/timbre {:mvn/version "6.3.1"}
         com.taoensso/tufte {:mvn/version "2.6.3"}
@@ -19,7 +18,8 @@
                   :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}
                                org.clojure/tools.namespace {:mvn/version "1.3.0"}}}
 
-           :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.13"}}
+           :build {:deps {io.github.huixiangchen0314/clj-build-template
+                          {:git/sha "5664761b0ee0aad60f587d14d00ccd8b2dc985e7"}}
                    :ns-default build}
 
            :dev {:extra-deps {nrepl/nrepl {:mvn/version "1.0.0"}
